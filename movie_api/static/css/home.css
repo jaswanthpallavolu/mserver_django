@@ -1,0 +1,17 @@
+ 
+.container{
+  
+    display: grid;
+    place-items:center;
+    
+}
+h1{
+  color:purple;
+  font-size: clamp(1rem,5vw,2rem);
+}
+li{
+  font-size: clamp(.8rem,3vw,1.2rem);
+  margin-bottom: .3rem;
+}
+li a{text-decoration: none;}
+li a:hover{border: 2px dotted rgb(8, 197, 197);}

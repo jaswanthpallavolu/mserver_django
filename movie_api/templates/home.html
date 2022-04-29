@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie API</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}" />
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Movie Recommendations API</h1>
+      <ul>
+        <li><h3>GET</h3></li>
+        <li><a href="/movies/info/tt0468569">/movies/info/tt0468569</a></li>
+        <li><a href="/movies/search/avengers">/movies/search/avengers</a></li>
+        <li>
+          <a href="#">/movies/allTags/(not implemented)</a>
+        </li>
+        <li>
+          <a href="/movies/tags/Oscar-winning+Movies"
+            >/movies/tags/Oscar-winning+Movies</a
+          >
+        </li>
+        <br />
+        <li>
+          <a href="/recommend/contentbased/tt0468569"
+            >/recommend/contentbased/tt0468569</a
+          >
+        </li>
+        <hr />
+        <li><h3>POST</h3></li>
+        <li>/movies/genres/ (POST body {"genre":["Thriller","Action"]} )</li>
+        <li>
+          /movies/tags/ (POST body
+          {"userHistory":{"Action":30,"Adventure":70,"Music":40}})
+        </li>
+
+        <li>
+          /recommend/collaborative/ (POST body { "movies":
+          [["tt0035423",1],["tt0319343",-1]] } )
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>
