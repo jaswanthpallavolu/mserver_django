@@ -5,12 +5,12 @@ import pandas as pd
 from pathlib import Path
 
 root = Path('.')
-CBpath = root / 'data'/'CB_SimilarityMatrix.pkl'
-CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
-# cb_df = pd.DataFrame(pickle.load(open(path1, 'rb')))
-# collab_df = pd.DataFrame(pickle.load(open(path2, 'rb')))
-cb_df = pd.read_pickle(CBpath)
-collab_df = pd.read_pickle(CFpath)
+# CBpath = root / 'data'/'CB_SimilarityMatrix.pkl'
+# CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
+# # cb_df = pd.DataFrame(pickle.load(open(path1, 'rb')))
+# # collab_df = pd.DataFrame(pickle.load(open(path2, 'rb')))
+# cb_df = pd.read_pickle(CBpath)
+# collab_df = pd.read_pickle(CFpath)
 
 
 def getRelatedMovies(movieId, rating):
