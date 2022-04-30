@@ -10,8 +10,12 @@ from pathlib import Path
 root = Path('.')
 moviesPath = root / 'data'/'5kMovies.pkl'
 movietagsPath = root / 'data'/'movieTags.pkl'
+movietagssubPath = root / 'data'/'movieTags_sub.pkl'
+awardstagsPath = root /'data'/'awardsTags.pkl'
 movies = pd.read_pickle(moviesPath)
 categories = pd.read_pickle(movietagsPath)
+categories_sub = pd.read_pickle(movietagssubPath)
+awards = pd.read_pickle(awardstagsPath)
 
 # Create your views here.
 
@@ -91,7 +95,7 @@ def listMoviesByTags(request, name):
 
 
 # get tags by passing genres
-@api_view(['POST'])
+@api_view(['GET','POST'])
 def listTags(request):
     if (request.method == 'POST'):
         try:
@@ -121,12 +125,15 @@ def listTags(request):
                         if matches != 0:
                             result_obj[len(matches)] = [x["tag"]]
 
-            categories.apply(reco_categories, axis=1)
+            categories_sub.apply(reco_categories, axis=1)
 
             priority_tags = random.sample(priority_tags,len(priority_tags))[0:6]
 
-            result = [] + priority_tags
-            for i in range(len(query), 0, -1):
+            awards_list = awards["tag"].tolist()
+            result = [] + priority_tags + random.sample(awards_list,3)
+            result = random.sample(result,len(result))
+
+            for i in range(len(query), 1, -1):
                 if i in list(result_obj.keys()):
                     if len(result_obj[i]) <= 20:
                         result = result + \
@@ -134,7 +141,14 @@ def listTags(request):
                     else:
                         result = result + random.sample(result_obj[i], 20)
 
-            print(priority_tags)
             return Response({'tagNames': result})
         except:
             return Response({'msg': 'Tags not found for post'})
+
+    if (request.method=='GET'):
+        try:
+            result = random.sample(awards['tag'].tolist(),3) + random.sample(categories_sub['tag'].tolist(),25)
+            return Response({'tagNames': random.sample(result,len(result))})
+        except:
+            return Response({'msg': 'Tags not found'})
+
