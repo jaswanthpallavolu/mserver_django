@@ -100,24 +100,32 @@ def listTags(request):
             if len(list(query.keys())) > 5:
                 query = dict(
                     sorted(query.items(), key=lambda x: x[1], reverse=True)[0:5])
+            else:
+                query = dict(sorted(query.items(), key=lambda x: x[1], reverse=True))
 
             result_obj = {}
+            priority_tags = []
 
             def reco_categories(x):
-                matches = 0
+                matches = []
                 genre = ast.literal_eval(x["genre"])
                 for i in query:
-                    if i in list(genre.keys()):
-                        matches = matches+1
-                if matches in result_obj.keys():
-                    result_obj[matches].append(x["tag"])
+                    if i in list(genre.keys())[0:3]:
+                        matches.append(i)
+                if len(matches)==2 and matches == list(query.keys())[0:2]:
+                    priority_tags.append(x["tag"])
                 else:
-                    if matches != 0:
-                        result_obj[matches] = [x["tag"]]
+                    if len(matches) in result_obj.keys():
+                        result_obj[len(matches)].append(x["tag"])
+                    else:
+                        if matches != 0:
+                            result_obj[len(matches)] = [x["tag"]]
 
             categories.apply(reco_categories, axis=1)
 
-            result = []
+            priority_tags = random.sample(priority_tags,len(priority_tags))[0:6]
+
+            result = [] + priority_tags
             for i in range(len(query), 0, -1):
                 if i in list(result_obj.keys()):
                     if len(result_obj[i]) <= 20:
@@ -126,6 +134,7 @@ def listTags(request):
                     else:
                         result = result + random.sample(result_obj[i], 20)
 
+            print(priority_tags)
             return Response({'tagNames': result})
         except:
             return Response({'msg': 'Tags not found for post'})
