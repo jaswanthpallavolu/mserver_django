@@ -1,6 +1,6 @@
-# Pipfile
-# Pipfile.lock
-/__pycache__
+Pipfile
+Pipfile.lock
+__pycache__/
 
 
 # ignore for development

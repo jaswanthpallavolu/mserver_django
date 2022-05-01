@@ -9,13 +9,14 @@ from pathlib import Path
 
 root = Path('.')
 moviesPath = root / 'data'/'5kMovies.pkl'
-movietagsPath = root / 'data'/'movieTags.pkl'
+# movietagsPath = root / 'data'/'movieTags.pkl'
 movietagssubPath = root / 'data'/'movieTags_sub.pkl'
-awardstagsPath = root /'data'/'awardsTags.pkl'
+awardstagsPath = root / 'data'/'awardsTags.pkl'
 movies = pd.read_pickle(moviesPath)
-categories = pd.read_pickle(movietagsPath)
+# categories = pd.read_pickle(movietagsPath)
 categories_sub = pd.read_pickle(movietagssubPath)
 awards = pd.read_pickle(awardstagsPath)
+categories = pd.concat([categories_sub, awards], axis=0)
 
 # Create your views here.
 
@@ -26,6 +27,7 @@ awards = pd.read_pickle(awardstagsPath)
 def movie(request, id):
     try:
         row = movies[movies['movieId'] == id]
+        row = row.fillna('')
         x = row.to_dict(orient='records')[0]
         x["genre"] = ast.literal_eval(str(x["genre"]))
         x["actors"] = ast.literal_eval(x["actors"])
@@ -95,7 +97,7 @@ def listMoviesByTags(request, name):
 
 
 # get tags by passing genres
-@api_view(['GET','POST'])
+@api_view(['GET', 'POST'])
 def listTags(request):
     if (request.method == 'POST'):
         try:
@@ -105,7 +107,8 @@ def listTags(request):
                 query = dict(
                     sorted(query.items(), key=lambda x: x[1], reverse=True)[0:5])
             else:
-                query = dict(sorted(query.items(), key=lambda x: x[1], reverse=True))
+                query = dict(
+                    sorted(query.items(), key=lambda x: x[1], reverse=True))
 
             result_obj = {}
             priority_tags = []
@@ -116,7 +119,7 @@ def listTags(request):
                 for i in query:
                     if i in list(genre.keys())[0:3]:
                         matches.append(i)
-                if len(matches)==2 and matches == list(query.keys())[0:2]:
+                if len(matches) == 2 and matches == list(query.keys())[0:2]:
                     priority_tags.append(x["tag"])
                 else:
                     if len(matches) in result_obj.keys():
@@ -127,11 +130,12 @@ def listTags(request):
 
             categories_sub.apply(reco_categories, axis=1)
 
-            priority_tags = random.sample(priority_tags,len(priority_tags))[0:6]
+            priority_tags = random.sample(
+                priority_tags, len(priority_tags))[0:6]
 
             awards_list = awards["tag"].tolist()
-            result = [] + priority_tags + random.sample(awards_list,3)
-            result = random.sample(result,len(result))
+            result = [] + priority_tags + random.sample(awards_list, 3)
+            result = random.sample(result, len(result))
 
             for i in range(len(query), 1, -1):
                 if i in list(result_obj.keys()):
@@ -145,10 +149,10 @@ def listTags(request):
         except:
             return Response({'msg': 'Tags not found for post'})
 
-    if (request.method=='GET'):
+    if (request.method == 'GET'):
         try:
-            result = random.sample(awards['tag'].tolist(),3) + random.sample(categories_sub['tag'].tolist(),25)
-            return Response({'tagNames': random.sample(result,len(result))})
+            result = random.sample(awards['tag'].tolist(
+            ), 3) + random.sample(categories_sub['tag'].tolist(), 25)
+            return Response({'tagNames': random.sample(result, len(result))})
         except:
             return Response({'msg': 'Tags not found'})
-
