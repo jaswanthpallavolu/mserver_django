@@ -85,8 +85,7 @@ def getGenreMovies(request):
 @api_view(['GET'])
 def listMoviesByTags(request, name):
     try:
-        result = ast.literal_eval(
-            categories[categories["tag"] == name.replace('+', ' ')]["movies"].values[0])
+        result = categories[categories["tag"] == name.replace('+', ' ')]["movies"].values[0]
         if len(result) <= 25:
             result = random.sample(result, len(result))
         else:
