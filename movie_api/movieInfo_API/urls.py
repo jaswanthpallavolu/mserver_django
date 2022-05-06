@@ -7,5 +7,5 @@ urlpatterns = [
     path('genres/', views.getGenreMovies),
     path('tags/<str:name>/', views.listMoviesByTags),
     path('tags/', views.listTags),
-
+    path('filter/',views.filtering),
 ]

@@ -156,3 +156,20 @@ def listTags(request):
             return Response({'tagNames': random.sample(result, len(result))})
         except:
             return Response({'msg': 'Tags not found'})
+
+# get movies by filters
+@api_view(['POST'])
+def filtering(request):
+    if (request.method == 'POST'):
+        try:
+            query = request.data["query"]
+
+            def filterMovies(query):
+                result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(lambda x:query["range"]<=x) & movies["year"].apply(lambda x:x<=query["released"])].sort_values(by=query["sort"][0],ascending=query["sort"][1]).head(200)
+                total = len(result)
+                result = result[(query["page"]-1)*query["nof"]:query["page"]*query["nof"]]["movieId"].tolist()
+                return {"total_movies":total,"movies":result}
+
+            return Response(filterMovies(query))
+        except:
+            return Response({'msg':'error on getting movies'})
