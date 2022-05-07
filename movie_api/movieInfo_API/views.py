@@ -85,8 +85,8 @@ def getGenreMovies(request):
 @api_view(['GET'])
 def listMoviesByTags(request, name):
     try:
-        result = ast.literal_eval(
-            categories[categories["tag"] == name.replace('+', ' ')]["movies"].values[0])
+        result = categories[categories["tag"] ==
+                            name.replace('+', ' ')]["movies"].values[0]
         if len(result) <= 25:
             result = random.sample(result, len(result))
         else:
@@ -158,6 +158,8 @@ def listTags(request):
             return Response({'msg': 'Tags not found'})
 
 # get movies by filters
+
+
 @api_view(['POST'])
 def filtering(request):
     if (request.method == 'POST'):
@@ -165,11 +167,13 @@ def filtering(request):
             query = request.data["query"]
 
             def filterMovies(query):
-                result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(lambda x:query["range"]<=x) & movies["year"].apply(lambda x:x<=query["released"])].sort_values(by=query["sort"][0],ascending=query["sort"][1]).head(200)
+                result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(
+                    lambda x:query["range"] <= x) & movies["year"].apply(lambda x:x <= query["released"])].sort_values(by=query["sort"][0], ascending=query["sort"][1]).head(200)
                 total = len(result)
-                result = result[(query["page"]-1)*query["nof"]:query["page"]*query["nof"]]["movieId"].tolist()
-                return {"total_movies":total,"movies":result}
+                result = result[(query["page"]-1)*query["nof"]
+                                 :query["page"]*query["nof"]]["movieId"].tolist()
+                return {"total_movies": total, "movies": result}
 
             return Response(filterMovies(query))
         except:
-            return Response({'msg':'error on getting movies'})
+            return Response({'msg': 'error on getting movies'})
