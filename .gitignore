@@ -1,7 +1,7 @@
 Pipfile
 Pipfile.lock
 /__pycache__/
-
+staticfiles/
 
 # ignore for development
 /data/CB_SimilarityMatrix.pkl
