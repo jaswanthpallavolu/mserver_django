@@ -167,8 +167,8 @@ def filtering(request):
             query = request.data["query"]
 
             def filterMovies(query):
-                result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(
-                    lambda x:query["range"] <= x) & movies["year"].apply(lambda x:x <= query["released"])].sort_values(by=query["sort"][0], ascending=query["sort"][1]).head(200)
+
+                result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(lambda x:query["range"]<=x) & movies["year"].apply(lambda x:x<=query["released"])].sort_values(by=query["sort"][0],ascending=query["sort"][1])
                 total = len(result)
                 result = result[(query["page"]-1)*query["nof"]
                                  :query["page"]*query["nof"]]["movieId"].tolist()
