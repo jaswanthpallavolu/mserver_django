@@ -20,8 +20,6 @@ categories = pd.concat([categories_sub, awards], axis=0)
 # Create your views here.
 
 # getting movie info by passing movieId
-
-
 @api_view(['GET'])
 def movie(request, id):
     try:
@@ -35,25 +33,31 @@ def movie(request, id):
     except:
         return Response({"msg": "Invaild MovieId"})
 
-# searching similar movies by passing title
-
-
+# searching similar movies ,tags by passing title
 @api_view(['GET'])
 def search(request, name):
     # result = movies[movies['title'].apply(lambda x:fuzz.token_set_ratio(x.lower(),name.lower()) > 70)].head(20)['title']
     # result = sorted(result,key=lambda x:fuzz.token_set_ratio(x.lower(),name.lower()),reverse=True)
     # result = list(map(lambda x:movies[movies['title']==x].iloc[0]['movieId'],result))
     result = []
+    result_tags = []
 
     def find(row):
         match = fuzz.token_set_ratio(row['title'].lower(), name.lower())
         if match >= 55:
             result.append([row['movieId'], match])
 
-    movies.apply(find, axis=1)
-    result = [i for i, j in sorted(result, key=lambda x: x[1], reverse=True)]
+    def findTags(row):
+        match = fuzz.token_set_ratio(row["tag"].lower(),name.lower())
+        if match >= 50:
+            result_tags.append([row["tag"],match])
 
-    return Response({'result': result[0:19], 'method': 'search'})
+    movies.apply(find, axis=1)
+    categories.apply(findTags,axis=1)
+    result = [i for i, j in sorted(result, key=lambda x: x[1], reverse=True)]
+    result_tags = [i for i, j in sorted(result_tags, key=lambda x: x[1], reverse=True)]
+
+    return Response({'movies': result[0:19], 'method': 'search','tags': result_tags[:20]})
 
 
 @api_view(['POST'])
@@ -96,8 +100,6 @@ def listMoviesByTags(request, name):
         return Response({'message': 'Tag not found', 'error': str(e)})
 
 # complex computation
-
-
 def filterCategories(query):
     result_obj = {}
     priority_tags = []
@@ -113,40 +115,49 @@ def filterCategories(query):
         else:
             if len(matches) in result_obj.keys():
                 result_obj[len(matches)].append(x["tag"])
-            elif matches != 0:
+            elif len(matches) > 0:
                 result_obj[len(matches)] = [x["tag"]]
 
     categories_sub.apply(filterTags, axis=1)
 
     return [result_obj, priority_tags]
 
+# default tags list
+def defaultTags():
+    award_list = random.sample(awards['tag'].tolist(
+    ), len(awards["tag"].tolist()))
+    tags = random.sample(categories_sub['tag'].tolist(), 32)
+    award_list_top = random.sample(
+        award_list[:3]+tags[0:5], len(award_list[:3]+tags[0:5]))
+    result = award_list_top + tags[5:] + award_list[3:]
+
+    return Response({'tagNames': result})
+
 # get tags by passing genres
-
-
 @api_view(['GET', 'POST'])
 def listTags(request):
     if (request.method == 'POST'):
         try:
             query = request.data["userHistory"]
+            if (len(query.items()) < 3): return defaultTags()
             query = dict(
-                sorted(query.items(), key=lambda x: x[1], reverse=True)[0:5])
+                sorted(query.items(), key=lambda x: x[1], reverse=True)[0:4])
 
             [result_obj, priority_tags] = filterCategories(query)
 
             priority_tags = random.sample(
-                priority_tags, len(priority_tags))[0:6]
+                priority_tags, len(priority_tags))[0:3]
 
             awards_list = awards["tag"].tolist()
             result = [] + priority_tags + random.sample(awards_list, 3)
             result = random.sample(result, len(result))
-
-            for i in range(len(query), 1, -1):
+            for i in range(len(query), 0, -1):
                 if i in list(result_obj.keys()):
-                    if len(result_obj[i]) <= 20:
+                    if len(result_obj[i]) <= (40 - len(result)):
                         result = result + \
                             random.sample(result_obj[i], len(result_obj[i]))
                     else:
-                        result = result + random.sample(result_obj[i], 20)
+                        result = result + random.sample(result_obj[i], (40 - len(result)))
 
             return Response({'tagNames': result})
         except Exception as e:
@@ -154,19 +165,11 @@ def listTags(request):
 
     if (request.method == 'GET'):
         try:
-            award_list = random.sample(awards['tag'].tolist(
-            ), 3)
-            tags = random.sample(categories_sub['tag'].tolist(), 25)
-            award_list = random.sample(
-                award_list+tags[0:5], len(award_list+tags[0:5]))
-
-            return Response({'tagNames': award_list + tags[5:]})
+            return defaultTags()
         except Exception as e:
             return Response({'msg': 'Tags not found', 'error': str(e)})
 
 # get movies by filters
-
-
 @api_view(['POST'])
 def filtering(request):
     if (request.method == 'POST'):
