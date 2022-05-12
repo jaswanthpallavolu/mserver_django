@@ -8,12 +8,11 @@ from pathlib import Path
 # import pickle
 
 root = Path('.')
-moviesPath = root / 'data'/'5kMovies.pkl'
-# movietagsPath = root / 'data'/'movieTags.pkl'
-movietagssubPath = root / 'data'/'movieTags_sub.pkl'
-awardstagsPath = root / 'data'/'awardsTags.pkl'
+moviesPath = root / 'data'/'5kMovies_12.05.pkl'
+movietagssubPath = root / 'data'/'movieTags_12.05.pkl'
+awardstagsPath = root / 'data'/'awardTags_12.05.pkl'
 movies = pd.read_pickle(moviesPath)
-# categories = pd.read_pickle(movietagsPath)
+
 categories_sub = pd.read_pickle(movietagssubPath)
 awards = pd.read_pickle(awardstagsPath)
 categories = pd.concat([categories_sub, awards], axis=0)
@@ -85,50 +84,54 @@ def getGenreMovies(request):
 @api_view(['GET'])
 def listMoviesByTags(request, name):
     try:
-        result = categories[categories["tag"] ==
-                            name.replace('+', ' ')]["movies"].values[0]
+        result = ast.literal_eval(str(categories[categories["tag"] ==
+                                                 name.replace('+', ' ')]["movies"].values[0]))
         if len(result) <= 25:
             result = random.sample(result, len(result))
         else:
             result = random.sample(result, 25)
         return Response({"tagname": name.replace('+', ' '), "movies": result})
-    except:
-        return Response({'msg': 'Tag name not found'})
+    except Exception as e:
+        # print(e)
+        return Response({'message': 'Tag not found', 'error': str(e)})
 
+# complex computation
+
+
+def filterCategories(query):
+    result_obj = {}
+    priority_tags = []
+
+    def filterTags(x):
+        matches = []
+        genre = ast.literal_eval(x["genre"])
+        for i in query:
+            if i in list(genre.keys())[0:3]:
+                matches.append(i)
+        if len(matches) == 2 and matches == list(query.keys())[0:2]:
+            priority_tags.append(x["tag"])
+        else:
+            if len(matches) in result_obj.keys():
+                result_obj[len(matches)].append(x["tag"])
+            elif matches != 0:
+                result_obj[len(matches)] = [x["tag"]]
+
+    categories_sub.apply(filterTags, axis=1)
+
+    return [result_obj, priority_tags]
 
 # get tags by passing genres
+
+
 @api_view(['GET', 'POST'])
 def listTags(request):
     if (request.method == 'POST'):
         try:
             query = request.data["userHistory"]
+            query = dict(
+                sorted(query.items(), key=lambda x: x[1], reverse=True)[0:5])
 
-            if len(list(query.keys())) > 5:
-                query = dict(
-                    sorted(query.items(), key=lambda x: x[1], reverse=True)[0:5])
-            else:
-                query = dict(
-                    sorted(query.items(), key=lambda x: x[1], reverse=True))
-
-            result_obj = {}
-            priority_tags = []
-
-            def reco_categories(x):
-                matches = []
-                genre = ast.literal_eval(x["genre"])
-                for i in query:
-                    if i in list(genre.keys())[0:3]:
-                        matches.append(i)
-                if len(matches) == 2 and matches == list(query.keys())[0:2]:
-                    priority_tags.append(x["tag"])
-                else:
-                    if len(matches) in result_obj.keys():
-                        result_obj[len(matches)].append(x["tag"])
-                    else:
-                        if matches != 0:
-                            result_obj[len(matches)] = [x["tag"]]
-
-            categories_sub.apply(reco_categories, axis=1)
+            [result_obj, priority_tags] = filterCategories(query)
 
             priority_tags = random.sample(
                 priority_tags, len(priority_tags))[0:6]
@@ -146,16 +149,20 @@ def listTags(request):
                         result = result + random.sample(result_obj[i], 20)
 
             return Response({'tagNames': result})
-        except:
-            return Response({'msg': 'Tags not found for post'})
+        except Exception as e:
+            return Response({'msg': 'Tags not found', 'error': str(e)})
 
     if (request.method == 'GET'):
         try:
-            result = random.sample(awards['tag'].tolist(
-            ), 3) + random.sample(categories_sub['tag'].tolist(), 25)
-            return Response({'tagNames': random.sample(result, len(result))})
-        except:
-            return Response({'msg': 'Tags not found'})
+            award_list = random.sample(awards['tag'].tolist(
+            ), 3)
+            tags = random.sample(categories_sub['tag'].tolist(), 25)
+            award_list = random.sample(
+                award_list+tags[0:5], len(award_list+tags[0:5]))
+
+            return Response({'tagNames': award_list + tags[5:]})
+        except Exception as e:
+            return Response({'msg': 'Tags not found', 'error': str(e)})
 
 # get movies by filters
 
@@ -168,10 +175,10 @@ def filtering(request):
 
             def filterMovies(query):
 
-                result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(lambda x:query["range"]<=x) & movies["year"].apply(lambda x:x<=query["released"])].sort_values(by=query["sort"][0],ascending=query["sort"][1])
+                result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(
+                    lambda x:query["range"] <= x) & movies["year"].apply(lambda x:x <= query["released"])].sort_values(by=query["sort"][0], ascending=query["sort"][1])
                 total = len(result)
-                result = result[(query["page"]-1)*query["nof"]
-                                 :query["page"]*query["nof"]]["movieId"].tolist()
+                result = result[(query["page"]-1)*query["nof"]                                :query["page"]*query["nof"]]["movieId"].tolist()
                 return {"total_movies": total, "movies": result}
 
             return Response(filterMovies(query))

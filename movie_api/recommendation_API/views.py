@@ -42,10 +42,6 @@ def collaborativeFilter(request):
         ids = collab_df.index.tolist()
         result = []
         if len(data) > 0:
-            # existedIds = []
-            # for movie in data:
-            #     if (movie[0] in ids):
-            #         existedIds.append(movie)
             similar_movies = pd.DataFrame()
 
             for movieId, rating in data:
