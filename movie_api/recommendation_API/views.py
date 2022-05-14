@@ -1,11 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import pandas as pd
-# import pickle
+import random
 from pathlib import Path
 
 root = Path('.')
-CBpath = root / 'data'/'CB_SimilarityMatrix.pkl'
+CBpath = root / 'data'/'CB_SimilarityMatrix_14.05.pkl'
 CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
 cb_df = pd.read_pickle(CBpath)
 collab_df = pd.read_pickle(CFpath)
@@ -53,9 +53,9 @@ def collaborativeFilter(request):
             similar_movies = similar_movies.sum(
                 axis=1).sort_values(ascending=False)
             result = list(filter(lambda x: x not in movies,
-                          similar_movies.index))[0:25]
+                          similar_movies.index))[0:30]
 
-        return Response({'message': 'collaborative filtering', "result": result})
+        return Response({'message': 'collaborative filtering', "result": random.sample(result, len(result))[0:25]})
 
     except:
         return Response({'message': 'error', "result": []})
