@@ -5,8 +5,11 @@ import random
 from pathlib import Path
 
 root = Path('.')
+moviesPath = root / 'data'/'5kMovies_11.06.pkl'
 CBpath = root / 'data'/'CB_SimilarityMatrix_14.05.pkl'
 CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
+
+movies = pd.read_pickle(moviesPath)
 cb_df = pd.read_pickle(CBpath)
 collab_df = pd.read_pickle(CFpath)
 
@@ -28,7 +31,15 @@ def contentBased(request, movieId):
         else:
             msg = 'content based'
             row = cb_df[movieId]
-            result = row.sort_values(ascending=False)[1:11].index.tolist()
+            ids = row.sort_values(ascending=False)[1:19].index.tolist()
+
+            rlist = {}
+            for id in ids:
+                movie = movies[movies['movieId'] == id]
+                rlist[id] = movie.imdbRating.values[0]
+
+            result = dict(
+                sorted(rlist.items(), key=lambda x: x[1], reverse=True)[0:12]).keys()
 
         return Response({'message': msg, 'result': result})
     except:
@@ -54,8 +65,9 @@ def collaborativeFilter(request):
                 axis=1).sort_values(ascending=False)
             result = list(filter(lambda x: x not in movies,
                           similar_movies.index))[0:30]
+            random.sample(result, len(result))[0:25]
 
-        return Response({'message': 'collaborative filtering', "result": random.sample(result, len(result))[0:25]})
+        return Response({'message': 'collaborative filtering', "result": result[0:25]})
 
     except:
         return Response({'message': 'error', "result": []})

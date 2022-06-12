@@ -8,20 +8,21 @@ from pathlib import Path
 # import pickle
 
 root = Path('.')
-moviesPath = root / 'data'/'5kMovies_12.05.pkl'
-movietagssubPath = root / 'data'/'movieTags_12.05.pkl'
-awardstagsPath = root / 'data'/'awardTags_12.05.pkl'
+moviesPath = root / 'data'/'5kMovies_11.06.pkl'
+movietagssubPath = root / 'data'/'movieTags_11.06.pkl'
+awardstagsPath = root / 'data'/'awardTags_11.06.pkl'
 movies = pd.read_pickle(moviesPath)
 
 categories_sub = pd.read_pickle(movietagssubPath)
 awards = pd.read_pickle(awardstagsPath)
 categories = pd.concat([categories_sub, awards], axis=0)
 
+allTitles = movies.title.tolist() + categories.tag.tolist()
+
 # Create your views here.
 
+
 # getting movie info by passing movieId
-
-
 @api_view(['GET'])
 def movie(request, id):
     try:
@@ -35,24 +36,21 @@ def movie(request, id):
     except:
         return Response({"msg": "Invaild MovieId"})
 
+
 # searching similar movies ,tags by passing title
-
-
 @api_view(['GET'])
 def search(request, name):
-    # result = movies[movies['title'].apply(lambda x:fuzz.token_set_ratio(x.lower(),name.lower()) > 70)].head(20)['title']
-    # result = sorted(result,key=lambda x:fuzz.token_set_ratio(x.lower(),name.lower()),reverse=True)
-    # result = list(map(lambda x:movies[movies['title']==x].iloc[0]['movieId'],result))
+
     result = []
     result_tags = []
 
     def find(row):
-        match = fuzz.token_set_ratio(row['title'].lower(), name.lower())
+        match = fuzz.token_set_ratio(row['title'], name.lower())
         if match >= 55:
             result.append([row['movieId'], match])
 
     def findTags(row):
-        match = fuzz.token_set_ratio(row["tag"].lower(), name.lower())
+        match = fuzz.token_set_ratio(row["tag"], name.lower())
         if match >= 40:
             result_tags.append([row["tag"], match])
 
@@ -62,7 +60,24 @@ def search(request, name):
     result_tags = [i for i, j in sorted(
         result_tags, key=lambda x: x[1], reverse=True)]
 
-    return Response({'movies': result[0:19], 'method': 'search', 'tags': result_tags[:20]})
+    return Response({'movies': result[0:19], 'tags': result_tags[:20], 'method': 'search'})
+
+
+@api_view(['GET'])
+def searchMatches(request, name):
+    try:
+        matches = {}
+        if name:
+            for title in allTitles:
+                percentage = fuzz.token_set_ratio(title, name.lower())
+                if(percentage > 45):
+                    matches[title] = percentage
+
+            matches = dict(
+                sorted(matches.items(), key=lambda x: x[1], reverse=True)[0:10])
+        return Response({'suggestions': matches.keys()})
+    except Exception as e:
+        return Response({'error': str(e)})
 
 
 @api_view(['POST'])
@@ -104,9 +119,8 @@ def listMoviesByTags(request, name):
         # print(e)
         return Response({'message': 'Tag not found', 'error': str(e)})
 
+
 # complex computation
-
-
 def filterCategories(query):
     result_obj = {}
     priority_tags = []
@@ -129,9 +143,8 @@ def filterCategories(query):
 
     return [result_obj, priority_tags]
 
+
 # default tags list
-
-
 def defaultTags():
     award_list = random.sample(awards['tag'].tolist(
     ), len(awards["tag"].tolist()))
@@ -142,9 +155,8 @@ def defaultTags():
 
     return Response({'tagNames': result})
 
+
 # get tags by passing genres
-
-
 @api_view(['GET', 'POST'])
 def listTags(request):
     if (request.method == 'POST'):
@@ -182,9 +194,8 @@ def listTags(request):
         except Exception as e:
             return Response({'msg': 'Tags not found', 'error': str(e)})
 
+
 # get movies by filters
-
-
 @api_view(['POST'])
 def filtering(request):
     if (request.method == 'POST'):

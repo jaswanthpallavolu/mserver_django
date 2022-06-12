@@ -1,9 +1,6 @@
 Pipfile
 Pipfile.lock
-/__pycache__/
 staticfiles/
 
 # ignore for development
-/data/CB_SimilarityMatrix.pkl
-/data/CB_SimilarityMatrix_14.05.pkl
-/data/CF_SimilarityMatrix.pkl
+/data/
