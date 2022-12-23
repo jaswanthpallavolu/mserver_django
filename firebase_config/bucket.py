@@ -10,6 +10,7 @@ files = ['5kMovies_11.06.pkl', 'awardTags_11.06.pkl',
 
 def downloadPickleFiles():
     try:
+        print('downloading pickles...')
         for name in files:
             filePath = root / 'data' / name
             isExits = os.path.exists(filePath)
