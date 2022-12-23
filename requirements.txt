@@ -1,6 +1,8 @@
-Django 
+Django
+dj_database_url 
 django_heroku 
 djangorestframework 
+django-cors-headers
 firebase_admin 
 fuzzywuzzy 
 pandas 
