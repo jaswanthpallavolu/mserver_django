@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view
 import pandas as pd
 import random
 from pathlib import Path
-import pickle as pkl
 
 root = Path('.')
 try:
@@ -26,9 +25,6 @@ def loadPickles():
         global movies
         global cb_df
         global collab_df
-        print(moviesPath)
-        movies = pkl.load(open(moviesPath, "rb"))
-        print(movies)
 
     except Exception as e:
         print("error:", str(e))

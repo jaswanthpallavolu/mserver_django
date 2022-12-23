@@ -1,7 +1,6 @@
 from firebase_config.firebase import bucket
 from pathlib import Path
 import os
-import pickle as pkl
 
 root = Path('.')
 
