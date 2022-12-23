@@ -6,18 +6,21 @@ from fuzzywuzzy import fuzz
 import random
 from pathlib import Path
 # import pickle
+try:
+    root = Path('.')
+    moviesPath = root / 'data'/'5kMovies_11.06.pkl'
+    movietagssubPath = root / 'data'/'movieTags_11.06.pkl'
+    awardstagsPath = root / 'data'/'awardTags_11.06.pkl'
+    print(moviesPath)
+    movies = pd.read_pickle(moviesPath)
+    categories_sub = pd.read_pickle(movietagssubPath)
+    awards = pd.read_pickle(awardstagsPath)
+    categories = pd.concat([categories_sub, awards], axis=0)
 
-root = Path('.')
-moviesPath = root / 'data'/'5kMovies_11.06.pkl'
-movietagssubPath = root / 'data'/'movieTags_11.06.pkl'
-awardstagsPath = root / 'data'/'awardTags_11.06.pkl'
-movies = pd.read_pickle(moviesPath)
+    allTitles = movies.title.tolist() + categories.tag.tolist()
 
-categories_sub = pd.read_pickle(movietagssubPath)
-awards = pd.read_pickle(awardstagsPath)
-categories = pd.concat([categories_sub, awards], axis=0)
-
-allTitles = movies.title.tolist() + categories.tag.tolist()
+except Exception as e:
+    print("error:", str(e))
 
 # Create your views here.
 
@@ -70,7 +73,7 @@ def searchMatches(request, name):
         if name:
             for title in allTitles:
                 percentage = fuzz.token_set_ratio(title, name.lower())
-                if(percentage > 45):
+                if (percentage > 45):
                     matches[title] = percentage
 
             matches = dict(
@@ -207,8 +210,7 @@ def filtering(request):
                 result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(
                     lambda x:query["range"] <= x) & movies["year"].apply(lambda x:x <= query["released"])].sort_values(by=query["sort"][0], ascending=query["sort"][1])
                 total = len(result)
-                result = result[(query["page"]-1)*query["nof"]
-                                 :query["page"]*query["nof"]]["movieId"].tolist()
+                result = result[(query["page"]-1)*query["nof"]:query["page"]*query["nof"]]["movieId"].tolist()
                 return {"total_movies": total, "movies": result}
 
             return Response(filterMovies(query))

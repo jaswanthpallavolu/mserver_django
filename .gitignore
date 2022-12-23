@@ -2,5 +2,12 @@ Pipfile
 Pipfile.lock
 staticfiles/
 
-# ignore for development
+ 
+*__pycache__/
+
+
+# ignore for production
 /data/
+/venv/
+.env
+

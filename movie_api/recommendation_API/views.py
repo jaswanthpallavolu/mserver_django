@@ -3,15 +3,35 @@ from rest_framework.decorators import api_view
 import pandas as pd
 import random
 from pathlib import Path
+import pickle as pkl
 
 root = Path('.')
-moviesPath = root / 'data'/'5kMovies_11.06.pkl'
-CBpath = root / 'data'/'CB_SimilarityMatrix_14.05.pkl'
-CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
+try:
+    moviesPath = root / 'data'/'5kMovies_11.06.pkl'
+    CBpath = root / 'data'/'CB_SimilarityMatrix_14.05.pkl'
+    CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
+    movies = pd.read_pickle(moviesPath)
+    cb_df = pd.read_pickle(CBpath)
+    collab_df = pd.read_pickle(CFpath)
 
-movies = pd.read_pickle(moviesPath)
-cb_df = pd.read_pickle(CBpath)
-collab_df = pd.read_pickle(CFpath)
+except Exception as e:
+    print("error:", str(e))
+
+
+def loadPickles():
+    try:
+        moviesPath = root / 'data'/'5kMovies_11.06.pkl'
+        CBpath = root / 'data'/'CB_SimilarityMatrix_14.05.pkl'
+        CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
+        global movies
+        global cb_df
+        global collab_df
+        print(moviesPath)
+        movies = pkl.load(open(moviesPath, "rb"))
+        print(movies)
+
+    except Exception as e:
+        print("error:", str(e))
 
 
 def getRelatedMovies(movieId, rating):
@@ -24,6 +44,7 @@ def getRelatedMovies(movieId, rating):
 @api_view(['GET'])
 def contentBased(request, movieId):
     try:
+
         ids = cb_df.index.tolist()
         if movieId not in ids:
             msg = 'id not found'
@@ -49,6 +70,7 @@ def contentBased(request, movieId):
 @api_view(['POST'])
 def collaborativeFilter(request):
     try:
+
         data = request.data['movies']
         ids = collab_df.index.tolist()
         result = []
