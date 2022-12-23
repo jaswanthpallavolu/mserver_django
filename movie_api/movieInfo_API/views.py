@@ -11,7 +11,7 @@ try:
     moviesPath = root / 'data'/'5kMovies_11.06.pkl'
     movietagssubPath = root / 'data'/'movieTags_11.06.pkl'
     awardstagsPath = root / 'data'/'awardTags_11.06.pkl'
-    print(moviesPath)
+    print("in-minfo", moviesPath)
     movies = pd.read_pickle(moviesPath)
     categories_sub = pd.read_pickle(movietagssubPath)
     awards = pd.read_pickle(awardstagsPath)
@@ -210,7 +210,8 @@ def filtering(request):
                 result = movies[movies["genre"].apply(lambda x:all(i in ast.literal_eval(str(x)) for i in query["genre"])) & movies["imdbRating"].apply(
                     lambda x:query["range"] <= x) & movies["year"].apply(lambda x:x <= query["released"])].sort_values(by=query["sort"][0], ascending=query["sort"][1])
                 total = len(result)
-                result = result[(query["page"]-1)*query["nof"]:query["page"]*query["nof"]]["movieId"].tolist()
+                result = result[(query["page"]-1)*query["nof"]
+                                 :query["page"]*query["nof"]]["movieId"].tolist()
                 return {"total_movies": total, "movies": result}
 
             return Response(filterMovies(query))

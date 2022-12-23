@@ -10,11 +10,13 @@ files = ['5kMovies_11.06.pkl', 'awardTags_11.06.pkl',
 
 def downloadPickleFiles():
     try:
-        print('downloading pickles...')
+
         for name in files:
             filePath = root / 'data' / name
+            print(filePath)
             isExits = os.path.exists(filePath)
             if (isExits == False):
+                print('downloading pickles...')
                 blob = bucket.blob(name)
                 blob.download_to_filename(filePath)
                 print(blob)

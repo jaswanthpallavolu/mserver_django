@@ -9,6 +9,7 @@ try:
     moviesPath = root / 'data'/'5kMovies_11.06.pkl'
     CBpath = root / 'data'/'CB_SimilarityMatrix_14.05.pkl'
     CFpath = root / 'data'/'CF_SimilarityMatrix.pkl'
+    print("in-reco", moviesPath)
     movies = pd.read_pickle(moviesPath)
     cb_df = pd.read_pickle(CBpath)
     collab_df = pd.read_pickle(CFpath)
