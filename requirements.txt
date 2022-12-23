@@ -4,3 +4,4 @@ djangorestframework
 firebase_admin 
 fuzzywuzzy 
 pandas 
+gunicorn
