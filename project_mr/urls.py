@@ -16,8 +16,7 @@ Including another URLconf
 
 from django.urls import path, include
 from django.contrib import admin
-from firebase_config.bucket import downloadPickleFiles
-downloadPickleFiles()
+
 
 urlpatterns = [
     path('', include('movie_api.urls')),

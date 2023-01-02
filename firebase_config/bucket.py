@@ -13,7 +13,7 @@ def downloadPickleFiles():
 
         for name in files:
             filePath = root / 'data' / name
-            print(filePath)
+            # print(filePath)
             isExits = os.path.exists(filePath)
             if (isExits == False):
                 print('downloading pickles...')

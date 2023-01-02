@@ -3,6 +3,7 @@ dj_database_url
 django_heroku 
 djangorestframework 
 django-cors-headers
+django-environ
 firebase_admin 
 fuzzywuzzy 
 pandas 
