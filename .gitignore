@@ -9,4 +9,5 @@ staticfiles/
 # ignore for production
 /venv/
 .env
-
+env
+*.pkl
